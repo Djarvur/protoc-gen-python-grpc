@@ -29,6 +29,17 @@ Exactly the same as any other protoc plugin.
 
 #### Parameters
 
+```
+protoc plugin to generate Python gRPC code
+
+Usage:
+  protoc-gen-python-grpc [flags]
+
+Flags:
+  -h, --help                     help for protoc-gen-python-grpc
+      --suffix string            generated file(s) name suffix (default "_pb2_grpc.py")
+      --template text/template   template to be used (default EMBEDDED)
+```
 
 ### Generic template support
 
