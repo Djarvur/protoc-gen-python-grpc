@@ -61,6 +61,8 @@ Also, the following functions are available to be used as template pipelines:
 - `{{split separator value}}` - splitting value by separator and returns a list of substrings 
 - `{{join separator ...values}}` - joining a values list to one string with values divided by separator
 
+See [embedded template](cmd/protoc-gen-python-grpc/internal/flags/pb2_grpc.py.tmpl) for example.
+
 ## Limitations and caveats
 
 This program based on the [github.com/pseudomuto/protokit](https://pkg.go.dev/github.com/pseudomuto/protokit?utm_source=godoc) package,
