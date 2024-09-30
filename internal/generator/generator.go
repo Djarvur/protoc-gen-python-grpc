@@ -37,16 +37,30 @@ type Method struct {
 // SupportedFeatures describes a flag setting for supported features.
 const SupportedFeatures = uint64(pluginpb.CodeGeneratorResponse_FEATURE_PROTO3_OPTIONAL)
 
-// Generator describes a protoc code generate plugin.
-// It's an implementation of Generator from github.com/pseudomuto/protokit.
-type Generator struct {
+var _ protokit.Plugin = (*generator)(nil)
+
+// generator describes a protoc code generate plugin.
+// It's an implementation of generator from github.com/pseudomuto/protokit.
+type generator struct {
 	Suffix   string
-	Template string
+	Template *template.Template
+}
+
+func New(suffix, tmplSrc string) (*generator, error) {
+	tmpl, err := buildTemplate(tmplSrc)
+	if err != nil {
+		return nil, err
+	}
+
+	return &generator{
+		Suffix:   suffix,
+		Template: tmpl,
+	}, nil
 }
 
 // Generate compiles the documentation and generates the CodeGeneratorResponse to send back to protoc. It does this
 // by rendering a template based on the options parsed from the CodeGeneratorRequest.
-func (p *Generator) Generate(r *pluginpb.CodeGeneratorRequest) (*pluginpb.CodeGeneratorResponse, error) {
+func (p *generator) Generate(r *pluginpb.CodeGeneratorRequest) (*pluginpb.CodeGeneratorResponse, error) {
 	resp := new(pluginpb.CodeGeneratorResponse)
 
 	for _, fds := range protokit.ParseCodeGenRequest(r) {
@@ -75,7 +89,7 @@ func (p *Generator) Generate(r *pluginpb.CodeGeneratorRequest) (*pluginpb.CodeGe
 	return resp, nil
 }
 
-func executeTemplate(tmplSrc string, data interface{}) (string, error) {
+func buildTemplate(tmplSrc string) (*template.Template, error) {
 	tmplFuncs := template.FuncMap{
 		"trimSuffix": strings.TrimSuffix,
 		"baseName":   strings.BaseName,
@@ -86,12 +100,16 @@ func executeTemplate(tmplSrc string, data interface{}) (string, error) {
 
 	tmpl, err := template.New("").Funcs(tmplFuncs).Parse(tmplSrc)
 	if err != nil {
-		return "", fmt.Errorf("parsing template: %w", err)
+		return nil, fmt.Errorf("parsing template: %w", err)
 	}
 
+	return tmpl, nil
+}
+
+func executeTemplate(tmpl *template.Template, data interface{}) (string, error) {
 	buf := new(bytes.Buffer)
 
-	if err = tmpl.Execute(buf, data); err != nil {
+	if err := tmpl.Execute(buf, data); err != nil {
 		return "", fmt.Errorf("executing template: %w", err)
 	}
 

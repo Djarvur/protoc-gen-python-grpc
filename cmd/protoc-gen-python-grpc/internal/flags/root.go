@@ -35,13 +35,7 @@ func Root() *cobra.Command {
 }
 
 func runRoot(suffix, templateSource string) {
-	err := protokit.RunPlugin(
-		&generator.Generator{
-			Suffix:   suffix,
-			Template: templateSource,
-		},
-	)
-	if err != nil {
+	if err := protokit.RunPlugin(must(generator.New(suffix, templateSource))); err != nil {
 		panic(err)
 	}
 }
