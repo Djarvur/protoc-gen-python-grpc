@@ -32,7 +32,7 @@ func TestTrimExtension(t *testing.T) {
 			func(t *testing.T) {
 				t.Parallel()
 
-				out := strings.TrimSuffix(tt.in, tt.sep)
+				out := strings.TrimSuffix(tt.sep, tt.in)
 				require.Equal(t, tt.out, out)
 			},
 		)
@@ -62,7 +62,7 @@ func TestBaseName(t *testing.T) {
 			func(t *testing.T) {
 				t.Parallel()
 
-				out := strings.BaseName(tt.in, tt.sep)
+				out := strings.BaseName(tt.sep, tt.in)
 				require.Equal(t, tt.out, out)
 			},
 		)

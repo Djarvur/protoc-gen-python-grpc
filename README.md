@@ -18,7 +18,7 @@ Please rise the issue in case of any difference found in these plugins output.
 ### Install
 
 ```
-go install github.com/Djarvur/protoc-gen-python-grpc/cmd/protoc-gen-python-grpc@v0.1.4
+go install github.com/Djarvur/protoc-gen-python-grpc/cmd/protoc-gen-python-grpc@v0.1.5
 ```
 
 Make sure your [protoc](https://grpc.io/docs/protoc-installation/)/[buf](https://buf.build/docs/installation) compiler can see the `protoc-gen-python-grpc` in the path.
