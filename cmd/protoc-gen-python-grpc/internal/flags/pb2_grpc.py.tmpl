@@ -3,15 +3,17 @@
 import grpc
 
 {{if .Services}}
-{{-  $Package  := .Package -}}
-{{- $FileName  := .Name -}}
-{{- $Alias     := join "" ($Package | replace  "_" "__" | replace "." "_dot_") "_dot_" ($FileName | baseName "/" | trimSuffix ".") "__pb2" -}}
+{{- $Package  := .Package -}}
+{{- $FileName := .Name -}}
+{{- $Alias    := join "" ($Package | replace  "_" "__" | replace "." "_dot_") "_dot_" ($FileName | baseName "/" | trimSuffix ".") "__pb2" -}}
 from {{$Package}} import {{baseName "/" $FileName | trimSuffix "."}}_pb2 as {{$Alias}}
 
 {{range $Service := .Services}}
 class {{$Service.Name}}Stub(object):
+    {{if $Service.Comment -}}
     """{{range split "\n" $Service.Comment}}{{.}}
     {{end}}"""
+    {{- else}}"""Missing associated documentation comment in .proto file."""{{end}}
 
     def __init__(self, channel):
         """Constructor.
@@ -29,12 +31,16 @@ class {{$Service.Name}}Stub(object):
 
 
 class {{$Service.Name}}Servicer(object):
+    {{if $Service.Comment -}}
     """{{range split "\n" $Service.Comment}}{{.}}
     {{end}}"""
+    {{- else}}"""Missing associated documentation comment in .proto file."""{{end}}
 {{range $Method := $Service.Methods}}
     def {{$Method.Name}}(self, request, context):
+        {{if $Method.Comment -}}
         """{{range split "\n" $Method.Comment}}{{.}}
         {{end}}"""
+        {{- else}}"""Missing associated documentation comment in .proto file."""{{end}}
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
@@ -57,8 +63,10 @@ def add_{{$Service.Name}}Servicer_to_server(servicer, server):
 
  # This class is part of an EXPERIMENTAL API.
 class {{$Service.Name}}(object):
+    {{if $Service.Comment -}}
     """{{range split "\n" $Service.Comment}}{{.}}
     {{end}}"""
+    {{- else}}"""Missing associated documentation comment in .proto file."""{{end}}
 {{range $Method := $Service.Methods}}
     @staticmethod
     def {{$Method.Name}}(request,

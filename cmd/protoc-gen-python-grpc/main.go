@@ -5,9 +5,7 @@ import (
 )
 
 func main() {
-
 	if err := flags.Root().Execute(); err != nil {
 		panic(err)
 	}
-
 }

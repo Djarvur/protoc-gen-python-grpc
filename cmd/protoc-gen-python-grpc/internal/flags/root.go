@@ -41,7 +41,6 @@ func runRoot(suffix, templateSource string) {
 			Template: templateSource,
 		},
 	)
-
 	if err != nil {
 		panic(err)
 	}

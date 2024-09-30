@@ -1,0 +1,89 @@
+run:
+  timeout: 5m
+  # include test files
+  tests: true
+
+linters:
+  enable-all: true
+  disable:
+    - exportloopref # is deprecated (since v1.60.2) due to: Since Go1.22 (loopvar) this linter is no longer relevant. Replaced by copyloopvar.
+    - execinquery   # is deprecated (since v1.58.0) due to: The repository of the linter has been archived by the owner.
+    - gomnd         # is deprecated (since v1.58.0) due to: The linter has been renamed. Replaced by mnd.
+  # Run all the linters from enabled linters set
+  fast: false
+
+issues:
+  include:
+    - EXC0001 # Check return values of os funcs
+    - EXC0004 # govet
+    - EXC0005 # C-style breaks
+
+  exclude-rules:
+    - linters:
+        - ireturn
+      text: "returns generic interface"
+    - linters:
+        - lll
+      source: "^(//\\s*)?//go:generate "
+    - linters:
+        - revive
+      text: "unexported-return: exported func .+ returns unexported type .+, which can be annoying to use"
+    # Exclude some linters from running on tests files.
+    - path: _test\.go
+      linters:
+        - gocyclo
+        - errcheck
+        - dupl
+        - gosec
+        - gochecknoglobals
+        - exhaustruct
+        - ireturn
+        - funlen
+        - unparam
+        - lll
+        - wrapcheck
+        - varnamelen
+
+linters-settings:
+  gci:
+    # Section configuration to compare against.
+    sections:
+      - standard # Standard section: captures all standard packages.
+      - default # Default section: contains all imports that could not be matched to another section type.
+      - prefix(github.com/Djarvur/protoc-gen-python-grpc) # Custom section: groups all imports with the specified Prefix.
+    skip-generated: false
+    # Require import section ordering the same as specified above.
+    custom-order: true
+  depguard:
+    rules:
+      main:
+        files:
+          - "!$test"
+          - "!**/cmd/**/*.go"
+        allow:
+          - $gostd
+          - github.com/Djarvur/protoc-gen-python-grpc
+          - github.com/pseudomuto/protokit
+          - github.com/golang/protobuf/protoc-gen-go/plugin
+      cmd:
+        files:
+          - "**/cmd/**/*.go"
+        allow:
+          - $gostd
+          - github.com/Djarvur/protoc-gen-python-grpc
+          - github.com/spf13/cobra
+          - github.com/spf13/pflag
+          - github.com/pseudomuto/protokit
+      tests:
+        files:
+          - $test
+        allow:
+          - $gostd
+          - github.com/Djarvur/protoc-gen-python-grpc
+          - github.com/stretchr/testify
+  revive:
+    rules:
+      - name: duplicated-imports
+        severity: error
+  goimports:
+    local-prefixes: github.com/Djarvur/protoc-gen-python-grpc

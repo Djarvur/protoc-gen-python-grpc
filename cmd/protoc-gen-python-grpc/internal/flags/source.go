@@ -8,10 +8,8 @@ import (
 	"github.com/spf13/pflag"
 )
 
-var (
-	//go:embed pb2_grpc.py.tmpl
-	defaultTemplateSrc string
-)
+//go:embed pb2_grpc.py.tmpl
+var defaultTemplateSrc string
 
 var _ pflag.Value = (*sourceValue)(nil)
 

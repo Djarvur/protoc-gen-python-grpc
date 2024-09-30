@@ -20,8 +20,8 @@ func BaseName(sep string, in string) string {
 	return in
 }
 
-func Replace(old, new string, in string) string {
-	return strings.Replace(in, old, new, -1)
+func Replace(from, to string, in string) string {
+	return strings.ReplaceAll(in, from, to)
 }
 
 func Split(sep string, s string) []string {

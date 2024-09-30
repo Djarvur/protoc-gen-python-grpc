@@ -6,10 +6,9 @@ import (
 	"fmt"
 	"text/template"
 
+	pluginpb "github.com/golang/protobuf/protoc-gen-go/plugin"
 	"github.com/pseudomuto/protokit"
 	"google.golang.org/protobuf/proto"
-
-	pluginpb "github.com/golang/protobuf/protoc-gen-go/plugin"
 
 	"github.com/Djarvur/protoc-gen-python-grpc/internal/strings"
 )
@@ -36,9 +35,10 @@ type Method struct {
 }
 
 // SupportedFeatures describes a flag setting for supported features.
-var SupportedFeatures = uint64(pluginpb.CodeGeneratorResponse_FEATURE_PROTO3_OPTIONAL)
+const SupportedFeatures = uint64(pluginpb.CodeGeneratorResponse_FEATURE_PROTO3_OPTIONAL)
 
-// Generator describes a protoc code generate plugin. It's an implementation of Generator from github.com/pseudomuto/protokit
+// Generator describes a protoc code generate plugin.
+// It's an implementation of Generator from github.com/pseudomuto/protokit.
 type Generator struct {
 	Suffix   string
 	Template string
@@ -56,16 +56,16 @@ func (p *Generator) Generate(r *pluginpb.CodeGeneratorRequest) (*pluginpb.CodeGe
 			Services: buildServices(fds.GetServices()),
 		}
 
-		f, errExecute := executeTemplate(p.Template, data)
+		content, errExecute := executeTemplate(p.Template, data)
 		if errExecute != nil {
 			return nil, errExecute
 		}
 
 		resp.File = append(
 			resp.File,
-			&pluginpb.CodeGeneratorResponse_File{
+			&pluginpb.CodeGeneratorResponse_File{ //nolint:exhaustruct
 				Name:    proto.String(strings.Replace("-", "_", strings.TrimSuffix(".", data.Name)+p.Suffix)),
-				Content: proto.String(f),
+				Content: proto.String(content),
 			},
 		)
 	}
@@ -76,7 +76,7 @@ func (p *Generator) Generate(r *pluginpb.CodeGeneratorRequest) (*pluginpb.CodeGe
 }
 
 func executeTemplate(tmplSrc string, data interface{}) (string, error) {
-	var tmplFuncs = template.FuncMap{
+	tmplFuncs := template.FuncMap{
 		"trimSuffix": strings.TrimSuffix,
 		"baseName":   strings.BaseName,
 		"replace":    strings.Replace,
@@ -118,15 +118,15 @@ func buildServices(in []*protokit.ServiceDescriptor) []Service {
 func buildMethods(in []*protokit.MethodDescriptor) []Method {
 	out := make([]Method, 0, 1)
 
-	for _, m := range in {
+	for _, method := range in {
 		out = append(
 			out, Method{
-				Name:            m.GetName(),
-				Comment:         m.GetComments().String(),
-				Request:         m.GetInputType(),
-				Response:        m.GetOutputType(),
-				ClientStreaming: m.GetClientStreaming(),
-				ServerStreaming: m.GetServerStreaming(),
+				Name:            method.GetName(),
+				Comment:         method.GetComments().String(),
+				Request:         method.GetInputType(),
+				Response:        method.GetOutputType(),
+				ClientStreaming: method.GetClientStreaming(),
+				ServerStreaming: method.GetServerStreaming(),
 			},
 		)
 	}
