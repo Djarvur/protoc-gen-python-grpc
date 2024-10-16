@@ -1,10 +1,11 @@
 package flags
 
 import (
-	"github.com/pseudomuto/protokit"
 	"github.com/spf13/cobra"
+	"os"
 
 	"github.com/Djarvur/protoc-gen-python-grpc/internal/generator"
+	"github.com/Djarvur/protoc-gen-python-grpc/internal/plugin"
 )
 
 const (
@@ -35,7 +36,13 @@ func Root() *cobra.Command {
 }
 
 func runRoot(suffix, templateSource string) {
-	if err := protokit.RunPlugin(must(generator.New(suffix, templateSource))); err != nil {
+	p, err := plugin.New(must(generator.New(suffix, templateSource)), os.Stdin, os.Stdout)
+	if err != nil {
+		panic(err)
+	}
+
+	err = p.Run()
+	if err != nil {
 		panic(err)
 	}
 }
