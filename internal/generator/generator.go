@@ -10,7 +10,6 @@ import (
 	gostrings "strings"
 	"text/template"
 
-	"github.com/Djarvur/protoc-gen-python-grpc/internal/plugin"
 	"github.com/Djarvur/protoc-gen-python-grpc/internal/strings"
 )
 
@@ -51,7 +50,7 @@ type Generator struct {
 	Template *template.Template
 }
 
-func New(suffix, tmplSrc string) (plugin.CodeGenerator, error) {
+func New(suffix, tmplSrc string) (*Generator, error) {
 	tmpl, err := buildTemplate(tmplSrc)
 	if err != nil {
 		return nil, err
