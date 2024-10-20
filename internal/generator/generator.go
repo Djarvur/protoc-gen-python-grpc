@@ -164,7 +164,7 @@ func parseServicesComments(fd *descriptorpb.FileDescriptorProto) map[string]stri
 
 		path := loc.GetPath()
 
-		if len(path) < 2 && path[0] != serviceFieldNumber {
+		if len(path) < 2 || path[0] != serviceFieldNumber {
 			continue
 		}
 
