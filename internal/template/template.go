@@ -1,4 +1,4 @@
-package flags
+package template
 
 import (
 	_ "embed"
@@ -11,26 +11,26 @@ import (
 //go:embed pb2_grpc.py.tmpl
 var defaultTemplateSrc string
 
-var _ pflag.Value = (*sourceValue)(nil)
+var _ pflag.Value = (*TemplateValue)(nil)
 
-type sourceValue struct {
+type TemplateValue struct {
 	name   string
 	source string
 }
 
-func (r *sourceValue) String() string {
+func (r *TemplateValue) String() string {
 	return r.name
 }
 
-func newTemplateValue() *sourceValue {
-	return &sourceValue{
+func NewTemplateValue() *TemplateValue {
+	return &TemplateValue{
 		name:   "EMBEDDED",
 		source: defaultTemplateSrc,
 	}
 }
 
 // Set is a method to set the template value.
-func (r *sourceValue) Set(s string) error {
+func (r *TemplateValue) Set(s string) error {
 	b, err := os.ReadFile(s)
 	if err != nil {
 		return fmt.Errorf("reading template %q: %w", s, err)
@@ -42,6 +42,10 @@ func (r *sourceValue) Set(s string) error {
 }
 
 // Type required to implement pflag.Value.
-func (*sourceValue) Type() string {
+func (*TemplateValue) Type() string {
 	return "text/template"
+}
+
+func (v *TemplateValue) Source() string {
+	return v.source
 }

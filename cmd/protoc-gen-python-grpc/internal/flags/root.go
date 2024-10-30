@@ -1,10 +1,13 @@
 package flags
 
 import (
-	"github.com/pseudomuto/protokit"
+	"os"
+
 	"github.com/spf13/cobra"
 
 	"github.com/Djarvur/protoc-gen-python-grpc/internal/generator"
+	"github.com/Djarvur/protoc-gen-python-grpc/internal/kit"
+	"github.com/Djarvur/protoc-gen-python-grpc/internal/template"
 )
 
 const (
@@ -14,7 +17,7 @@ const (
 )
 
 func Root() *cobra.Command {
-	templateSource := newTemplateValue()
+	templateSource := template.NewTemplateValue()
 
 	cmd := &cobra.Command{ //nolint:exhaustruct
 		Use:   "protoc-gen-python-grpc",
@@ -23,7 +26,7 @@ func Root() *cobra.Command {
 		Run: func(cmd *cobra.Command, args []string) {
 			runRoot(
 				must(cmd.Flags().GetString(fileNameSuffixFlag)),
-				templateSource.source,
+				templateSource.Source(),
 			)
 		},
 	}
@@ -35,7 +38,7 @@ func Root() *cobra.Command {
 }
 
 func runRoot(suffix, templateSource string) {
-	if err := protokit.RunPlugin(must(generator.New(suffix, templateSource))); err != nil {
+	if err := kit.New().RunPluginWithIO(generator.New(suffix, templateSource), os.Stdin, os.Stdout); err != nil {
 		panic(err)
 	}
 }

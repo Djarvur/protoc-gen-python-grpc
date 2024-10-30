@@ -43,24 +43,24 @@ var _ protokit.Plugin = (*generator)(nil)
 // It's an implementation of generator from github.com/pseudomuto/protokit.
 type generator struct {
 	Suffix   string
-	Template *template.Template
+	Template string
 }
 
-func New(suffix, tmplSrc string) (*generator, error) {
-	tmpl, err := buildTemplate(tmplSrc)
-	if err != nil {
-		return nil, err
-	}
-
+func New(suffix, tmplSrc string) *generator {
 	return &generator{
 		Suffix:   suffix,
-		Template: tmpl,
-	}, nil
+		Template: tmplSrc,
+	}
 }
 
 // Generate compiles the documentation and generates the CodeGeneratorResponse to send back to protoc. It does this
 // by rendering a template based on the options parsed from the CodeGeneratorRequest.
 func (p *generator) Generate(r *pluginpb.CodeGeneratorRequest) (*pluginpb.CodeGeneratorResponse, error) {
+	tmpl, err := buildTemplate(p.Template)
+	if err != nil {
+		return nil, fmt.Errorf("building template: %w", err)
+	}
+
 	resp := new(pluginpb.CodeGeneratorResponse)
 
 	for _, fds := range protokit.ParseCodeGenRequest(r) {
@@ -70,7 +70,7 @@ func (p *generator) Generate(r *pluginpb.CodeGeneratorRequest) (*pluginpb.CodeGe
 			Services: buildServices(fds.GetServices()),
 		}
 
-		content, errExecute := executeTemplate(p.Template, data)
+		content, errExecute := executeTemplate(tmpl, data)
 		if errExecute != nil {
 			return nil, errExecute
 		}
@@ -150,4 +150,12 @@ func buildMethods(in []*protokit.MethodDescriptor) []Method {
 	}
 
 	return out
+}
+
+func must[T any](v T, err error) T {
+	if err != nil {
+		panic(err)
+	}
+
+	return v
 }
