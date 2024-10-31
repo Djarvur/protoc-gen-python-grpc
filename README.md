@@ -18,7 +18,7 @@ Please rise the issue in case of any difference found in these plugins output.
 ### Install
 
 ```sh
-go install github.com/Djarvur/protoc-gen-python-grpc/cmd/protoc-gen-python-grpc@v0.1.7
+go install github.com/Djarvur/protoc-gen-python-grpc/cmd/protoc-gen-python-grpc@latest
 ```
 
 Make sure your [protoc](https://grpc.io/docs/protoc-installation/)/[buf](https://buf.build/docs/installation) compiler can see the `protoc-gen-python-grpc` in the path.
@@ -76,7 +76,7 @@ Also, the following functions are available to be used as template pipelines:
 - `{{split separator value}}` - splitting value by separator and returns a list of substrings
 - `{{join separator ...values}}` - joining a values list to one string with values divided by separator
 
-See [embedded template](cmd/protoc-gen-python-grpc/internal/flags/pb2_grpc.py.tmpl) for example.
+See [embedded template](internal/template/pb2_grpc.py.tmpl) for example.
 
 ## Limitations and caveats
 
