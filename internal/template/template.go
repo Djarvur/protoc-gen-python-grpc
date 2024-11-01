@@ -18,8 +18,8 @@ type TemplateValue struct {
 	source string
 }
 
-func (r *TemplateValue) String() string {
-	return r.name
+func (v *TemplateValue) String() string {
+	return v.name
 }
 
 func NewTemplateValue() *TemplateValue {
@@ -30,19 +30,19 @@ func NewTemplateValue() *TemplateValue {
 }
 
 // Set is a method to set the template value.
-func (r *TemplateValue) Set(s string) error {
+func (v *TemplateValue) Set(s string) error {
 	b, err := os.ReadFile(s)
 	if err != nil {
 		return fmt.Errorf("reading template %q: %w", s, err)
 	}
 
-	r.source = string(b)
+	v.source = string(b)
 
 	return nil
 }
 
 // Type required to implement pflag.Value.
-func (*TemplateValue) Type() string {
+func (v *TemplateValue) Type() string {
 	return "text/template"
 }
 

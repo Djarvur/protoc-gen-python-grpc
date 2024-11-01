@@ -60,11 +60,17 @@ linters-settings:
         files:
           - "!$test"
           - "!**/cmd/**/*.go"
+          - "!**/internal/template/*.go"
         allow:
           - $gostd
           - github.com/Djarvur/protoc-gen-python-grpc
-          - github.com/pseudomuto/protokit
-          - github.com/golang/protobuf/protoc-gen-go/plugin
+      template:
+        files:
+          - "**/internal/template/*.go"
+        allow:
+          - $gostd
+          - github.com/Djarvur/protoc-gen-python-grpc
+          - github.com/spf13/pflag
       cmd:
         files:
           - "**/cmd/**/*.go"
@@ -73,7 +79,6 @@ linters-settings:
           - github.com/Djarvur/protoc-gen-python-grpc
           - github.com/spf13/cobra
           - github.com/spf13/pflag
-          - github.com/pseudomuto/protokit
       tests:
         files:
           - $test

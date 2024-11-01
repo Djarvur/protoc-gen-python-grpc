@@ -77,9 +77,3 @@ Also, the following functions are available to be used as template pipelines:
 - `{{join separator ...values}}` - joining a values list to one string with values divided by separator
 
 See [embedded template](internal/template/pb2_grpc.py.tmpl) for example.
-
-## Limitations and caveats
-
-This program based on the [github.com/pseudomuto/protokit](https://pkg.go.dev/github.com/pseudomuto/protokit?utm_source=godoc) package,
-which is a bit outdated and based on the [github.com/golang/protobuf](https://pkg.go.dev/github.com/golang/protobuf) package
-which is deprecated. Still works though.
