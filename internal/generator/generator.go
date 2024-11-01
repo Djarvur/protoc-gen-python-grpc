@@ -2,13 +2,14 @@ package generator
 
 import (
 	"bytes"
-	_ "embed"
+	"errors"
 	"fmt"
+	gostrings "strings"
 	"text/template"
 
-	pluginpb "github.com/golang/protobuf/protoc-gen-go/plugin"
-	"github.com/pseudomuto/protokit"
 	"google.golang.org/protobuf/proto"
+	"google.golang.org/protobuf/types/descriptorpb"
+	"google.golang.org/protobuf/types/pluginpb"
 
 	"github.com/Djarvur/protoc-gen-python-grpc/internal/strings"
 )
@@ -37,7 +38,18 @@ type Method struct {
 // SupportedFeatures describes a flag setting for supported features.
 const SupportedFeatures = uint64(pluginpb.CodeGeneratorResponse_FEATURE_PROTO3_OPTIONAL)
 
-var _ protokit.Plugin = (*generator)(nil)
+const (
+	// serviceMethodFieldNumber contains method field number in ServiceDescriptorProto message.
+	serviceMethodFieldNumber = 2
+	// serviceFieldNumber contains service field number in FileDescriptorProto message.
+	serviceFieldNumber = 6
+)
+
+var (
+	ErrTemplateParse = errors.New("template parsing error")
+	ErrTemplateBuild = errors.New("template building error")
+	ErrTemplateExec  = errors.New("template executing error")
+)
 
 // generator describes a protoc code generate plugin.
 // It's an implementation of generator from github.com/pseudomuto/protokit.
@@ -55,19 +67,19 @@ func New(suffix, tmplSrc string) *generator {
 
 // Generate compiles the documentation and generates the CodeGeneratorResponse to send back to protoc. It does this
 // by rendering a template based on the options parsed from the CodeGeneratorRequest.
-func (p *generator) Generate(r *pluginpb.CodeGeneratorRequest) (*pluginpb.CodeGeneratorResponse, error) {
+func (p *generator) Generate(req *pluginpb.CodeGeneratorRequest) (*pluginpb.CodeGeneratorResponse, error) {
 	tmpl, err := buildTemplate(p.Template)
 	if err != nil {
-		return nil, fmt.Errorf("building template: %w", err)
+		return nil, errors.Join(ErrTemplateBuild, err)
 	}
 
 	resp := new(pluginpb.CodeGeneratorResponse)
 
-	for _, fds := range protokit.ParseCodeGenRequest(r) {
+	for _, fds := range req.GetProtoFile() {
 		data := ProtoFile{
 			Package:  fds.GetPackage(),
 			Name:     fds.GetName(),
-			Services: buildServices(fds.GetServices()),
+			Services: buildServices(fds),
 		}
 
 		content, errExecute := executeTemplate(tmpl, data)
@@ -100,7 +112,7 @@ func buildTemplate(tmplSrc string) (*template.Template, error) {
 
 	tmpl, err := template.New("").Funcs(tmplFuncs).Parse(tmplSrc)
 	if err != nil {
-		return nil, fmt.Errorf("parsing template: %w", err)
+		return nil, errors.Join(ErrTemplateParse, err)
 	}
 
 	return tmpl, nil
@@ -110,52 +122,75 @@ func executeTemplate(tmpl *template.Template, data interface{}) (string, error) 
 	buf := new(bytes.Buffer)
 
 	if err := tmpl.Execute(buf, data); err != nil {
-		return "", fmt.Errorf("executing template: %w", err)
+		return "", errors.Join(ErrTemplateExec, err)
 	}
 
 	return buf.String(), nil
 }
 
-func buildServices(in []*protokit.ServiceDescriptor) []Service {
-	out := make([]Service, 0, len(in))
+func buildServices(fd *descriptorpb.FileDescriptorProto) []Service {
+	out := make([]Service, 0, len(fd.GetService()))
 
-	for _, svc := range in {
-		out = append(
-			out,
-			Service{
-				Name:    svc.GetName(),
-				Comment: svc.GetComments().String(),
-				Methods: buildMethods(svc.GetMethods()),
-			},
-		)
+	comments := parseServicesComments(fd)
+
+	for serviceIdx, svc := range fd.GetService() {
+		servicePath := fmt.Sprintf("%d.%d", serviceFieldNumber, serviceIdx)
+		service := Service{
+			Name:    svc.GetName(),
+			Comment: comments[servicePath],
+			Methods: []Method{},
+		}
+
+		for methodIdx, method := range svc.GetMethod() {
+			methodPath := fmt.Sprintf("%s.%d.%d", servicePath, serviceMethodFieldNumber, methodIdx)
+			service.Methods = append(
+				service.Methods, Method{
+					Name:            method.GetName(),
+					Comment:         comments[methodPath],
+					Request:         method.GetInputType(),
+					Response:        method.GetOutputType(),
+					ClientStreaming: method.GetClientStreaming(),
+					ServerStreaming: method.GetServerStreaming(),
+				},
+			)
+		}
+
+		out = append(out, service)
 	}
 
 	return out
 }
 
-func buildMethods(in []*protokit.MethodDescriptor) []Method {
-	out := make([]Method, 0, 1)
+func parseServicesComments(fd *descriptorpb.FileDescriptorProto) map[string]string {
+	comments := make(map[string]string)
 
-	for _, method := range in {
-		out = append(
-			out, Method{
-				Name:            method.GetName(),
-				Comment:         method.GetComments().String(),
-				Request:         method.GetInputType(),
-				Response:        method.GetOutputType(),
-				ClientStreaming: method.GetClientStreaming(),
-				ServerStreaming: method.GetServerStreaming(),
-			},
-		)
+	for _, loc := range fd.GetSourceCodeInfo().GetLocation() {
+		if loc.GetLeadingComments() == "" && loc.GetTrailingComments() == "" {
+			continue
+		}
+
+		path := loc.GetPath()
+
+		if len(path) < 2 || path[0] != serviceFieldNumber {
+			continue
+		}
+
+		buf := new(bytes.Buffer)
+
+		if leading := scrub(loc.GetLeadingComments()); leading != "" {
+			buf.WriteString(leading)
+			buf.WriteString("\n\n")
+		}
+
+		buf.WriteString(scrub(loc.GetTrailingComments()))
+
+		commentPath := gostrings.ReplaceAll(gostrings.Trim(fmt.Sprintf("%v", path), "[]"), " ", ".")
+		comments[commentPath] = gostrings.TrimSpace(buf.String())
 	}
 
-	return out
+	return comments
 }
 
-func must[T any](v T, err error) T {
-	if err != nil {
-		panic(err)
-	}
-
-	return v
+func scrub(str string) string {
+	return gostrings.TrimSpace(gostrings.ReplaceAll(str, "\n ", "\n"))
 }
