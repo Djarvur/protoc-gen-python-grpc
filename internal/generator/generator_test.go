@@ -1,11 +1,11 @@
 package generator_test
 
 import (
-	"io"
-	"os"
+	_ "embed"
 	"testing"
 
-	"github.com/stretchr/testify/suite"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/pluginpb"
 
@@ -17,47 +17,16 @@ const (
 	fileNameSuffixDefault = "_pb2_grpc.py"
 )
 
-type GeneratorSuite struct {
-	suite.Suite
-	InBytes  []byte
-	OutBytes []byte
-}
+var (
+	//go:embed testdata/in.bin
+	inBytes []byte
+	//go:embed testdata/out.bin
+	outBytes []byte
+)
 
-func TestGeneratorSuite(t *testing.T) {
+func TestGenerator_New(t *testing.T) {
 	t.Parallel()
 
-	// read serialized request/response from testdata
-	in, err := os.OpenFile("testdata/in.bin", os.O_RDONLY, 0)
-	if err != nil {
-		t.Fatalf("not found testdata/in.bin")
-	}
-	defer in.Close()
-
-	inBytes, err := io.ReadAll(in)
-	if err != nil {
-		t.Fatalf("error reading testdata/in.bin")
-	}
-
-	out, err := os.OpenFile("testdata/out.bin", os.O_RDONLY, 0)
-	if err != nil {
-		t.Fatalf("not found testdata/out.bin")
-	}
-	defer out.Close()
-
-	outBytes, err := io.ReadAll(out)
-	if err != nil {
-		t.Fatalf("error reading testdata/out.bin")
-	}
-
-	// create suite and set test data
-	s := new(GeneratorSuite)
-	s.InBytes = inBytes
-	s.OutBytes = outBytes
-
-	suite.Run(t, s)
-}
-
-func (s *GeneratorSuite) TestGenerator_New() {
 	// Arrange
 	suffix := "suffix"
 	tmplSrc := "template"
@@ -66,16 +35,18 @@ func (s *GeneratorSuite) TestGenerator_New() {
 	gen := generator.New(suffix, tmplSrc)
 
 	// Assert
-	s.Require().NotNil(gen, "got nil generator")
-	s.Equal(suffix, gen.Suffix)
-	s.Equal(tmplSrc, gen.Template)
+	require.NotNil(t, gen, "got nil generator")
+	assert.Equal(t, suffix, gen.Suffix)
+	assert.Equal(t, tmplSrc, gen.Template)
 }
 
-func (s *GeneratorSuite) TestGenerator_Generate_Success() {
+func TestGenerator_Generate_Success(t *testing.T) {
+	t.Parallel()
+
 	// Arrange
 	req := new(pluginpb.CodeGeneratorRequest)
-	if err := proto.Unmarshal(s.InBytes, req); err != nil {
-		s.T().Fatalf("error unmarshalling testdata/in.bin: %v", err)
+	if err := proto.Unmarshal(inBytes, req); err != nil {
+		t.Fatalf("error unmarshalling testdata/in.bin: %v", err)
 	}
 
 	templateSource := template.NewTemplateValue()
@@ -85,18 +56,20 @@ func (s *GeneratorSuite) TestGenerator_Generate_Success() {
 	resp, err := gen.Generate(req)
 
 	// Assert
-	s.Require().NoError(err, "error generating response")
-	s.Require().NotNil(resp, "got nil response")
+	require.NoError(t, err, "error generating response")
+	require.NotNil(t, resp, "got nil response")
 
 	outData, err := proto.Marshal(resp)
 	if err != nil {
-		s.T().Fatalf("error marshalling generated response: %v", err)
+		t.Fatalf("error marshalling generated response: %v", err)
 	}
 
-	s.Require().Equal(s.OutBytes, outData)
+	require.Equal(t, outBytes, outData)
 }
 
-func (s *GeneratorSuite) TestGenerator_Generate_EmptyRequestSuccess() {
+func TestGenerator_Generate_EmptyRequestSuccess(t *testing.T) {
+	t.Parallel()
+
 	// Arrange
 	req := new(pluginpb.CodeGeneratorRequest)
 
@@ -105,7 +78,7 @@ func (s *GeneratorSuite) TestGenerator_Generate_EmptyRequestSuccess() {
 
 	expectedData, err := proto.Marshal(expectedResp)
 	if err != nil {
-		s.T().Fatalf("error marshaling expected response: %v", err)
+		t.Fatalf("error marshaling expected response: %v", err)
 	}
 
 	gen := generator.New("", "")
@@ -114,18 +87,20 @@ func (s *GeneratorSuite) TestGenerator_Generate_EmptyRequestSuccess() {
 	resp, err := gen.Generate(req)
 
 	// Assert
-	s.Require().NoError(err, "error generating response")
-	s.Require().NotNil(resp, "got nil response")
+	require.NoError(t, err, "error generating response")
+	require.NotNil(t, resp, "got nil response")
 
 	outData, err := proto.Marshal(resp)
 	if err != nil {
-		s.T().Fatalf("error marshalling generated response: %v", err)
+		t.Fatalf("error marshalling generated response: %v", err)
 	}
 
-	s.Require().Equal(expectedData, outData)
+	require.Equal(t, expectedData, outData)
 }
 
-func (s *GeneratorSuite) TestGenerator_Generate_BuildTemplateError() {
+func TestGenerator_Generate_BuildTemplateError(t *testing.T) {
+	t.Parallel()
+
 	// Arrange
 	req := new(pluginpb.CodeGeneratorRequest)
 	gen := generator.New("", "{{ if }}")
@@ -134,15 +109,17 @@ func (s *GeneratorSuite) TestGenerator_Generate_BuildTemplateError() {
 	_, err := gen.Generate(req)
 
 	// Assert
-	s.Require().Error(err)
-	s.Require().ErrorIs(err, generator.ErrTemplateBuild)
+	require.Error(t, err)
+	require.ErrorIs(t, err, generator.ErrTemplateBuild)
 }
 
-func (s *GeneratorSuite) TestGenerator_Generate_ExecuteTemplateError() {
+func TestGenerator_Generate_ExecuteTemplateError(t *testing.T) {
+	t.Parallel()
+
 	// Arrange
 	req := new(pluginpb.CodeGeneratorRequest)
-	if err := proto.Unmarshal(s.InBytes, req); err != nil {
-		s.T().Errorf("error unmarshalling testdata/in.bin: %v", err)
+	if err := proto.Unmarshal(inBytes, req); err != nil {
+		t.Errorf("error unmarshalling testdata/in.bin: %v", err)
 	}
 
 	gen := generator.New(fileNameSuffixDefault, "{{ .Data }}")
@@ -151,6 +128,6 @@ func (s *GeneratorSuite) TestGenerator_Generate_ExecuteTemplateError() {
 	_, err := gen.Generate(req)
 
 	// Assert
-	s.Require().Error(err)
-	s.Require().ErrorIs(err, generator.ErrTemplateExec)
+	require.Error(t, err)
+	require.ErrorIs(t, err, generator.ErrTemplateExec)
 }
