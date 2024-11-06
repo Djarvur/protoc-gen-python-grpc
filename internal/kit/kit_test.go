@@ -36,6 +36,7 @@ func TestRunPluginWithIO_ReadError(t *testing.T) {
 
 	// Assert
 	require.Error(t, err)
+	require.ErrorIs(t, err, kit.ErrRun)
 	require.ErrorIs(t, err, errReader)
 }
 
@@ -54,6 +55,7 @@ func TestRunPluginWithIO_BadInputDataError(t *testing.T) {
 
 	// Assert
 	require.Error(t, err)
+	require.ErrorIs(t, err, kit.ErrRun)
 	require.ErrorIs(t, err, proto.Error)
 }
 
