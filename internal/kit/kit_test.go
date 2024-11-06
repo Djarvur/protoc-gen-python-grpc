@@ -29,7 +29,7 @@ func TestRunPluginWithIO(t *testing.T) {
 	out := &bytes.Buffer{}
 
 	err := kit.New().RunPluginWithIO(
-		generator.New(fileNameSuffixDefault, template.NewTemplateValue().Source()),
+		generator.New(fileNameSuffixDefault, template.DefaultValue().Source()),
 		bytes.NewBuffer(inBytes),
 		out,
 	)
