@@ -1,23 +1,30 @@
 package kit
 
 import (
+	"errors"
 	"io"
 
-	plugin_go "github.com/golang/protobuf/protoc-gen-go/plugin"
+	plugingo "github.com/golang/protobuf/protoc-gen-go/plugin"
 	"github.com/pseudomuto/protokit"
 )
 
+var ErrRun = errors.New("generator run error")
+
 type Plugin interface {
-	Generate(req *plugin_go.CodeGeneratorRequest) (*plugin_go.CodeGeneratorResponse, error)
+	Generate(req *plugingo.CodeGeneratorRequest) (*plugingo.CodeGeneratorResponse, error)
 }
 
-type Kit struct {
-}
+type Kit struct{}
 
 func New() Kit {
 	return Kit{}
 }
 
 func (k Kit) RunPluginWithIO(p Plugin, r io.Reader, w io.Writer) error {
-	return protokit.RunPluginWithIO(p, r, w)
+	err := protokit.RunPluginWithIO(p, r, w)
+	if err != nil {
+		return errors.Join(ErrRun, err)
+	}
+
+	return nil
 }
