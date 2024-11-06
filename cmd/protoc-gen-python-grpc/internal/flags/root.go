@@ -17,7 +17,7 @@ const (
 )
 
 func Root() *cobra.Command {
-	templateSource := template.NewTemplateValue()
+	templateSource := template.DefaultValue()
 
 	cmd := &cobra.Command{ //nolint:exhaustruct
 		Use:   "protoc-gen-python-grpc",

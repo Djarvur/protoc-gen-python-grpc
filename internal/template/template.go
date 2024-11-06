@@ -2,7 +2,8 @@ package template
 
 import (
 	_ "embed"
-	"fmt"
+	"errors"
+	"io"
 	"os"
 
 	"github.com/spf13/pflag"
@@ -11,41 +12,72 @@ import (
 //go:embed pb2_grpc.py.tmpl
 var defaultTemplateSrc string
 
-var _ pflag.Value = (*TemplateValue)(nil)
+var ErrTemplateRead = errors.New("reading template")
 
-type TemplateValue struct {
+var _ pflag.Value = (*Value)(nil)
+
+type Value struct {
 	name   string
 	source string
 }
 
-func (r *TemplateValue) String() string {
-	return r.name
-}
-
-func NewTemplateValue() *TemplateValue {
-	return &TemplateValue{
+func DefaultValue() *Value {
+	return &Value{
 		name:   "EMBEDDED",
 		source: defaultTemplateSrc,
 	}
 }
 
-// Set is a method to set the template value.
-func (r *TemplateValue) Set(s string) error {
-	b, err := os.ReadFile(s)
-	if err != nil {
-		return fmt.Errorf("reading template %q: %w", s, err)
+// NewValue is a method to create a new Value from a reader.
+func NewValue(name string, reader io.Reader) (*Value, error) {
+	val := &Value{
+		name:   name,
+		source: "",
 	}
 
-	r.source = string(b)
+	source, err := io.ReadAll(reader)
+	if err != nil {
+		return nil, errors.Join(ErrTemplateRead, err)
+	}
+
+	val.source = string(source)
+
+	return val, nil
+}
+
+func (v *Value) Name() string {
+	return v.name
+}
+
+func (v *Value) Source() string {
+	return v.source
+}
+
+// String required to implement pflag.Value.
+func (v *Value) String() string {
+	return v.Name()
+}
+
+// Set required to implement pflag.Value.
+// It sets the template value from a file path.
+func (v *Value) Set(filepath string) error {
+	file, err := os.Open(filepath)
+	if err != nil {
+		return errors.Join(ErrTemplateRead, err)
+	}
+
+	newValue, err := NewValue(filepath, file)
+	if err != nil {
+		return err
+	}
+
+	v.name = newValue.Name()
+	v.source = newValue.Source()
 
 	return nil
 }
 
 // Type required to implement pflag.Value.
-func (*TemplateValue) Type() string {
+func (v *Value) Type() string {
 	return "text/template"
-}
-
-func (v *TemplateValue) Source() string {
-	return v.source
 }

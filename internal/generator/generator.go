@@ -3,7 +3,7 @@ package generator
 import (
 	"bytes"
 	_ "embed"
-	"fmt"
+	"errors"
 	"text/template"
 
 	pluginpb "github.com/golang/protobuf/protoc-gen-go/plugin"
@@ -11,6 +11,11 @@ import (
 	"google.golang.org/protobuf/proto"
 
 	"github.com/Djarvur/protoc-gen-python-grpc/internal/strings"
+)
+
+var (
+	ErrTemplateBuild = errors.New("template building error")
+	ErrTemplateExec  = errors.New("template executing error")
 )
 
 type ProtoFile struct {
@@ -37,17 +42,17 @@ type Method struct {
 // SupportedFeatures describes a flag setting for supported features.
 const SupportedFeatures = uint64(pluginpb.CodeGeneratorResponse_FEATURE_PROTO3_OPTIONAL)
 
-var _ protokit.Plugin = (*generator)(nil)
+var _ protokit.Plugin = (*Generator)(nil)
 
-// generator describes a protoc code generate plugin.
-// It's an implementation of generator from github.com/pseudomuto/protokit.
-type generator struct {
+// Generator describes a protoc code generate plugin.
+// It's an implementation of Generator from github.com/pseudomuto/protokit.
+type Generator struct {
 	Suffix   string
 	Template string
 }
 
-func New(suffix, tmplSrc string) *generator {
-	return &generator{
+func New(suffix, tmplSrc string) *Generator {
+	return &Generator{
 		Suffix:   suffix,
 		Template: tmplSrc,
 	}
@@ -55,15 +60,15 @@ func New(suffix, tmplSrc string) *generator {
 
 // Generate compiles the documentation and generates the CodeGeneratorResponse to send back to protoc. It does this
 // by rendering a template based on the options parsed from the CodeGeneratorRequest.
-func (p *generator) Generate(r *pluginpb.CodeGeneratorRequest) (*pluginpb.CodeGeneratorResponse, error) {
+func (p *Generator) Generate(request *pluginpb.CodeGeneratorRequest) (*pluginpb.CodeGeneratorResponse, error) {
 	tmpl, err := buildTemplate(p.Template)
 	if err != nil {
-		return nil, fmt.Errorf("building template: %w", err)
+		return nil, err
 	}
 
 	resp := new(pluginpb.CodeGeneratorResponse)
 
-	for _, fds := range protokit.ParseCodeGenRequest(r) {
+	for _, fds := range protokit.ParseCodeGenRequest(request) {
 		data := ProtoFile{
 			Package:  fds.GetPackage(),
 			Name:     fds.GetName(),
@@ -100,7 +105,7 @@ func buildTemplate(tmplSrc string) (*template.Template, error) {
 
 	tmpl, err := template.New("").Funcs(tmplFuncs).Parse(tmplSrc)
 	if err != nil {
-		return nil, fmt.Errorf("parsing template: %w", err)
+		return nil, errors.Join(ErrTemplateBuild, err)
 	}
 
 	return tmpl, nil
@@ -110,7 +115,7 @@ func executeTemplate(tmpl *template.Template, data interface{}) (string, error) 
 	buf := new(bytes.Buffer)
 
 	if err := tmpl.Execute(buf, data); err != nil {
-		return "", fmt.Errorf("executing template: %w", err)
+		return "", errors.Join(ErrTemplateExec, err)
 	}
 
 	return buf.String(), nil
@@ -150,12 +155,4 @@ func buildMethods(in []*protokit.MethodDescriptor) []Method {
 	}
 
 	return out
-}
-
-func must[T any](v T, err error) T {
-	if err != nil {
-		panic(err)
-	}
-
-	return v
 }

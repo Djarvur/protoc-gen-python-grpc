@@ -25,11 +25,7 @@ func Replace(from, to string, in string) string {
 }
 
 func Split(sep string, s string) []string {
-	if out := strings.Split(s, sep); len(out) > 0 {
-		return out
-	}
-
-	return []string{}
+	return strings.Split(s, sep)
 }
 
 func Join(sep string, s ...string) string {
