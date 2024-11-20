@@ -80,6 +80,12 @@ See [embedded template](internal/template/pb2_grpc.py.tmpl) for example.
 
 ## Limitations and caveats
 
+Notice the `replace` line in the [go.mod](./go.mod).
+
 This program based on the [github.com/pseudomuto/protokit](https://pkg.go.dev/github.com/pseudomuto/protokit?utm_source=godoc) package,
 which is a bit outdated and based on the [github.com/golang/protobuf](https://pkg.go.dev/github.com/golang/protobuf) package
-which is deprecated. Still works though.
+which is deprecated.
+
+So it was necessary to fork the [github.com/pseudomuto/protokit](https://pkg.go.dev/github.com/pseudomuto/protokit?utm_source=godoc)
+and update protobuf to [google.golang.org/protobuf](https://pkg.go.dev/google.golang.org/protobuf).
+[PR](https://github.com/pseudomuto/protokit/pull/12) to the upstream provided and we are waiting for it to be merged.

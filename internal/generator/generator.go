@@ -6,9 +6,9 @@ import (
 	"fmt"
 	"text/template"
 
-	pluginpb "github.com/golang/protobuf/protoc-gen-go/plugin"
 	"github.com/pseudomuto/protokit"
 	"google.golang.org/protobuf/proto"
+	"google.golang.org/protobuf/types/pluginpb"
 
 	"github.com/Djarvur/protoc-gen-python-grpc/internal/strings"
 )

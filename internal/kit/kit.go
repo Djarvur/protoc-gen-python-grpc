@@ -3,12 +3,12 @@ package kit
 import (
 	"io"
 
-	plugin_go "github.com/golang/protobuf/protoc-gen-go/plugin"
 	"github.com/pseudomuto/protokit"
+	"google.golang.org/protobuf/types/pluginpb"
 )
 
 type Plugin interface {
-	Generate(req *plugin_go.CodeGeneratorRequest) (*plugin_go.CodeGeneratorResponse, error)
+	Generate(req *pluginpb.CodeGeneratorRequest) (*pluginpb.CodeGeneratorResponse, error)
 }
 
 type Kit struct {
