@@ -8,8 +8,8 @@ require (
 	github.com/pseudomuto/protokit v0.2.1
 	github.com/spf13/cobra v1.9.1
 	github.com/spf13/pflag v1.0.6
-	github.com/stretchr/testify v1.9.0
-	google.golang.org/protobuf v1.36.5
+	github.com/stretchr/testify v1.10.0
+	google.golang.org/protobuf v1.36.6
 )
 
 require (
