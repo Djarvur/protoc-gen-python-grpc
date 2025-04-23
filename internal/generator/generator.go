@@ -10,6 +10,7 @@ import (
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/pluginpb"
 
+	"github.com/Djarvur/protoc-gen-python-grpc/internal/flags"
 	"github.com/Djarvur/protoc-gen-python-grpc/internal/strings"
 )
 
@@ -46,16 +47,18 @@ type generator struct {
 	Template string
 }
 
-func New(suffix, tmplSrc string) *generator {
-	return &generator{
-		Suffix:   suffix,
-		Template: tmplSrc,
-	}
+func New() *generator {
+	return &generator{}
 }
 
 // Generate compiles the documentation and generates the CodeGeneratorResponse to send back to protoc. It does this
 // by rendering a template based on the options parsed from the CodeGeneratorRequest.
 func (p *generator) Generate(r *pluginpb.CodeGeneratorRequest) (*pluginpb.CodeGeneratorResponse, error) {
+	params := flags.Parse(r.Parameter)
+
+	p.Suffix = params.Suffix
+	p.Template = params.Template
+
 	tmpl, err := buildTemplate(p.Template)
 	if err != nil {
 		return nil, fmt.Errorf("building template: %w", err)

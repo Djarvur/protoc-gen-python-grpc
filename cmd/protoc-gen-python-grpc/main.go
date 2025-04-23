@@ -1,11 +1,14 @@
 package main
 
 import (
-	"github.com/Djarvur/protoc-gen-python-grpc/cmd/protoc-gen-python-grpc/internal/flags"
+	"os"
+
+	"github.com/Djarvur/protoc-gen-python-grpc/internal/generator"
+	"github.com/Djarvur/protoc-gen-python-grpc/internal/kit"
 )
 
 func main() {
-	if err := flags.Root().Execute(); err != nil {
+	if err := kit.New().RunPluginWithIO(generator.New(), os.Stdin, os.Stdout); err != nil {
 		panic(err)
 	}
 }
