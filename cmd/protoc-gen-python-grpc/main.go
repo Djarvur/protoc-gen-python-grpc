@@ -3,12 +3,13 @@ package main
 import (
 	"os"
 
+	"github.com/pseudomuto/protokit"
+
 	"github.com/Djarvur/protoc-gen-python-grpc/internal/generator"
-	"github.com/Djarvur/protoc-gen-python-grpc/internal/kit"
 )
 
 func main() {
-	if err := kit.New().RunPluginWithIO(generator.New(), os.Stdin, os.Stdout); err != nil {
+	if err := protokit.RunPluginWithIO(generator.New(), os.Stdin, os.Stdout); err != nil {
 		panic(err)
 	}
 }

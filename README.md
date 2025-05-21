@@ -76,7 +76,7 @@ Also, the following functions are available to be used as template pipelines:
 - `{{split separator value}}` - splitting value by separator and returns a list of substrings
 - `{{join separator ...values}}` - joining a values list to one string with values divided by separator
 
-See [embedded template](internal/template/pb2_grpc.py.tmpl) for example.
+See [embedded template](internal/flags/template/pb2_grpc.py.tmpl) for example.
 
 ## Limitations and caveats
 

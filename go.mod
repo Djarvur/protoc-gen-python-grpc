@@ -6,7 +6,6 @@ replace github.com/pseudomuto/protokit => github.com/Djarvur/protokit v0.2.2
 
 require (
 	github.com/pseudomuto/protokit v0.2.1
-	github.com/spf13/pflag v1.0.6
 	github.com/stretchr/testify v1.9.0
 	google.golang.org/protobuf v1.34.2
 )

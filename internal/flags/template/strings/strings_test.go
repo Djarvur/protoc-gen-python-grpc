@@ -6,7 +6,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/Djarvur/protoc-gen-python-grpc/internal/strings"
+	"github.com/Djarvur/protoc-gen-python-grpc/internal/flags/template/strings"
 )
 
 func TestTrimExtension(t *testing.T) {

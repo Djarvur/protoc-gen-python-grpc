@@ -4,6 +4,7 @@ import (
 	"bytes"
 	_ "embed"
 	"fmt"
+	"strings"
 	"text/template"
 
 	"github.com/pseudomuto/protokit"
@@ -11,7 +12,6 @@ import (
 	"google.golang.org/protobuf/types/pluginpb"
 
 	"github.com/Djarvur/protoc-gen-python-grpc/internal/flags"
-	"github.com/Djarvur/protoc-gen-python-grpc/internal/strings"
 )
 
 type ProtoFile struct {
@@ -43,8 +43,6 @@ var _ protokit.Plugin = (*generator)(nil)
 // generator describes a protoc code generate plugin.
 // It's an implementation of generator from github.com/pseudomuto/protokit.
 type generator struct {
-	Suffix   string
-	Template string
 }
 
 func New() *generator {
@@ -56,14 +54,6 @@ func New() *generator {
 func (p *generator) Generate(r *pluginpb.CodeGeneratorRequest) (*pluginpb.CodeGeneratorResponse, error) {
 	params := flags.Parse(r.Parameter)
 
-	p.Suffix = params.Suffix
-	p.Template = params.Template
-
-	tmpl, err := buildTemplate(p.Template)
-	if err != nil {
-		return nil, fmt.Errorf("building template: %w", err)
-	}
-
 	resp := new(pluginpb.CodeGeneratorResponse)
 
 	for _, fds := range protokit.ParseCodeGenRequest(r) {
@@ -73,7 +63,7 @@ func (p *generator) Generate(r *pluginpb.CodeGeneratorRequest) (*pluginpb.CodeGe
 			Services: buildServices(fds.GetServices()),
 		}
 
-		content, errExecute := executeTemplate(tmpl, data)
+		content, errExecute := executeTemplate(params.Template.Template, data)
 		if errExecute != nil {
 			return nil, errExecute
 		}
@@ -81,7 +71,7 @@ func (p *generator) Generate(r *pluginpb.CodeGeneratorRequest) (*pluginpb.CodeGe
 		resp.File = append(
 			resp.File,
 			&pluginpb.CodeGeneratorResponse_File{ //nolint:exhaustruct
-				Name:    proto.String(strings.Replace("-", "_", strings.TrimSuffix(".", data.Name)+p.Suffix)),
+				Name:    proto.String(strings.ReplaceAll(strings.TrimSuffix(data.Name, ".")+params.Suffix, "-", "_")),
 				Content: proto.String(content),
 			},
 		)
@@ -90,23 +80,6 @@ func (p *generator) Generate(r *pluginpb.CodeGeneratorRequest) (*pluginpb.CodeGe
 	resp.SupportedFeatures = proto.Uint64(SupportedFeatures)
 
 	return resp, nil
-}
-
-func buildTemplate(tmplSrc string) (*template.Template, error) {
-	tmplFuncs := template.FuncMap{
-		"trimSuffix": strings.TrimSuffix,
-		"baseName":   strings.BaseName,
-		"replace":    strings.Replace,
-		"split":      strings.Split,
-		"join":       strings.Join,
-	}
-
-	tmpl, err := template.New("").Funcs(tmplFuncs).Parse(tmplSrc)
-	if err != nil {
-		return nil, fmt.Errorf("parsing template: %w", err)
-	}
-
-	return tmpl, nil
 }
 
 func executeTemplate(tmpl *template.Template, data interface{}) (string, error) {
@@ -153,12 +126,4 @@ func buildMethods(in []*protokit.MethodDescriptor) []Method {
 	}
 
 	return out
-}
-
-func must[T any](v T, err error) T {
-	if err != nil {
-		panic(err)
-	}
-
-	return v
 }
