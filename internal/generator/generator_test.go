@@ -3,8 +3,6 @@ package generator_test
 import (
 	"bytes"
 	_ "embed"
-	"encoding/json"
-	"os"
 	"testing"
 
 	"github.com/pseudomuto/protokit"
@@ -29,18 +27,4 @@ func TestRunPluginWithIO(t *testing.T) {
 	err := protokit.RunPluginWithIO(generator.New(), bytes.NewReader(inBytes), out)
 	require.NoError(t, err)
 	require.Equal(t, out.Bytes(), outBytes)
-}
-
-func dumpJSON(fName string, tree any) error {
-	f, err := os.Create(fName)
-	if err != nil {
-		return err
-	}
-
-	defer f.Close()
-
-	enc := json.NewEncoder(f)
-	enc.SetIndent("", "  ")
-
-	return enc.Encode(tree)
 }
