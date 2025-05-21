@@ -71,7 +71,13 @@ func (p *generator) Generate(r *pluginpb.CodeGeneratorRequest) (*pluginpb.CodeGe
 		resp.File = append(
 			resp.File,
 			&pluginpb.CodeGeneratorResponse_File{ //nolint:exhaustruct
-				Name:    proto.String(strings.ReplaceAll(strings.TrimSuffix(data.Name, ".")+params.Suffix, "-", "_")),
+				Name: proto.String(
+					strings.ReplaceAll(
+						strings.TrimSuffix(data.Name, ".proto")+params.Suffix,
+						"-",
+						"_",
+					),
+				),
 				Content: proto.String(content),
 			},
 		)

@@ -88,4 +88,4 @@ which is deprecated.
 
 So it was necessary to fork the [github.com/pseudomuto/protokit](https://pkg.go.dev/github.com/pseudomuto/protokit?utm_source=godoc)
 and update protobuf to [google.golang.org/protobuf](https://pkg.go.dev/google.golang.org/protobuf).
-[PR](https://github.com/pseudomuto/protokit/pull/12) to the upstream provided and we are waiting for it to be merged.
+[PR](https://github.com/pseudomuto/protokit/pull/12) to the upstream provided, and we are waiting for it to be merged.
