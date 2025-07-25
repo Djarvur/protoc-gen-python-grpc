@@ -3,7 +3,7 @@ package main
 import (
 	"os"
 
-	"github.com/pseudomuto/protokit"
+	"github.com/Djarvur/protokit"
 
 	"github.com/Djarvur/protoc-gen-python-grpc/internal/generator"
 )

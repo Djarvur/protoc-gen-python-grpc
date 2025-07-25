@@ -7,7 +7,7 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/pseudomuto/protokit"
+	"github.com/Djarvur/protokit"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/pluginpb"
 
@@ -41,15 +41,14 @@ const SupportedFeatures = uint64(pluginpb.CodeGeneratorResponse_FEATURE_PROTO3_O
 var _ protokit.Plugin = (*generator)(nil)
 
 // generator describes a protoc code generate plugin.
-// It's an implementation of generator from github.com/pseudomuto/protokit.
-type generator struct {
-}
+// It's an implementation of generator from github.com/Djarvur/protokit.
+type generator struct{}
 
 func New() *generator {
 	return &generator{}
 }
 
-// Generate compiles the documentation and generates the CodeGeneratorResponse to send back to protoc. It does this
+// Generate compiles the code and generates the CodeGeneratorResponse to send back to protoc. It does this
 // by rendering a template based on the options parsed from the CodeGeneratorRequest.
 func (p *generator) Generate(r *pluginpb.CodeGeneratorRequest) (*pluginpb.CodeGeneratorResponse, error) {
 	params := flags.Parse(r.Parameter)

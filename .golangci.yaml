@@ -63,7 +63,7 @@ linters-settings:
         allow:
           - $gostd
           - github.com/Djarvur/protoc-gen-python-grpc
-          - github.com/pseudomuto/protokit
+          - github.com/Djarvur/protokit
           - github.com/golang/protobuf/protoc-gen-go/plugin
       cmd:
         files:
@@ -73,7 +73,7 @@ linters-settings:
           - github.com/Djarvur/protoc-gen-python-grpc
           - github.com/spf13/cobra
           - github.com/spf13/pflag
-          - github.com/pseudomuto/protokit
+          - github.com/Djarvur/protokit
       tests:
         files:
           - $test

@@ -2,10 +2,8 @@ module github.com/Djarvur/protoc-gen-python-grpc
 
 go 1.22.5
 
-replace github.com/pseudomuto/protokit => github.com/Djarvur/protokit v0.2.2
-
 require (
-	github.com/pseudomuto/protokit v0.2.1
+	github.com/Djarvur/protokit v0.3.0
 	github.com/stretchr/testify v1.9.0
 	google.golang.org/protobuf v1.34.2
 )

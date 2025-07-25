@@ -5,7 +5,7 @@ import (
 	_ "embed"
 	"testing"
 
-	"github.com/pseudomuto/protokit"
+	"github.com/Djarvur/protokit"
 	"github.com/stretchr/testify/require"
 
 	"github.com/Djarvur/protoc-gen-python-grpc/internal/generator"
