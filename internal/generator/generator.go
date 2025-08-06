@@ -9,6 +9,7 @@ import (
 
 	"github.com/Djarvur/protokit"
 	"google.golang.org/protobuf/proto"
+	"google.golang.org/protobuf/types/descriptorpb"
 	"google.golang.org/protobuf/types/pluginpb"
 
 	"github.com/Djarvur/protoc-gen-python-grpc/internal/flags"
@@ -36,7 +37,8 @@ type Method struct {
 }
 
 // SupportedFeatures describes a flag setting for supported features.
-const SupportedFeatures = uint64(pluginpb.CodeGeneratorResponse_FEATURE_PROTO3_OPTIONAL)
+const SupportedFeatures = uint64(pluginpb.CodeGeneratorResponse_FEATURE_PROTO3_OPTIONAL |
+	pluginpb.CodeGeneratorResponse_FEATURE_SUPPORTS_EDITIONS)
 
 var _ protokit.Plugin = (*generator)(nil)
 
@@ -83,6 +85,8 @@ func (p *generator) Generate(r *pluginpb.CodeGeneratorRequest) (*pluginpb.CodeGe
 	}
 
 	resp.SupportedFeatures = proto.Uint64(SupportedFeatures)
+	resp.MinimumEdition = proto.Int32(int32(descriptorpb.Edition_EDITION_PROTO2))
+	resp.MaximumEdition = proto.Int32(int32(descriptorpb.Edition_EDITION_2024))
 
 	return resp, nil
 }
