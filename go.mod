@@ -4,7 +4,7 @@ go 1.22.5
 
 require (
 	github.com/Djarvur/protokit v0.3.0
-	github.com/stretchr/testify v1.9.0
+	github.com/stretchr/testify v1.11.1
 	google.golang.org/protobuf v1.36.7
 )
 
