@@ -1,11 +1,11 @@
 module github.com/Djarvur/protoc-gen-python-grpc
 
-go 1.22.5
+go 1.23
 
 require (
 	github.com/Djarvur/protokit v0.3.0
 	github.com/stretchr/testify v1.11.1
-	google.golang.org/protobuf v1.36.7
+	google.golang.org/protobuf v1.36.8
 )
 
 require (
